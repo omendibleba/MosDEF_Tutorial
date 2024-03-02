@@ -1,0 +1,47 @@
+log etho_npt.log
+
+atom_style full
+boundary p p p
+units real
+bond_style harmonic
+angle_style harmonic
+dihedral_style opls
+improper_style harmonic
+pair_style lj/cut/coul/long 11.0 11.0
+pair_modify mix arithmetic
+special_bonds lj/coul 0.0 0.0 0.5
+kspace_style pppm 0.0001
+
+# ----------------- Atom Definition Section -----------------
+
+read_data "ethanol_density_0.789.data"
+
+# ----------------- Settings Section -----------------
+
+neighbor 3.0 bin
+neigh_modify every 2 delay 0 check yes one 3000
+
+
+
+
+# ----------------- Run Section -----------------
+
+thermo         1000
+thermo_style    custom step time etotal pe ke density temp press vol lx enthalpy 
+
+reset_timestep 0 
+
+#  -- minimize --
+minimize 1.0e-6 1.0e-8 10000 100000
+write_data ethanol_solv_min.data
+
+
+## Equil NPT ##
+
+fix      NPT  all npt temp 298 298 100 iso 1 1 1000
+dump 1 all dcd 1000 etho_npt.dcd
+
+run 500000
+write_data etho_npt_equil.data
+
+
